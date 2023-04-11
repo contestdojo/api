@@ -3,7 +3,6 @@ name = "contestdojo-api"
 version = "0.1.0"
 description = ""
 authors = ["Oliver Ni <oliver.ni@gmail.com>"]
-packages = [{ include = "contestdojo_api" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
