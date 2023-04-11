@@ -2,12 +2,8 @@ import functools
 from typing import Any, Awaitable, Callable, TypedDict
 
 from firebase_admin.auth import UserNotFoundError, UserRecord
-from starlette.authentication import (
-    AuthCredentials,
-    AuthenticationBackend,
-    AuthenticationError,
-    BaseUser,
-)
+from starlette.authentication import (AuthCredentials, AuthenticationBackend,
+                                      AuthenticationError, BaseUser)
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.requests import Request
@@ -62,14 +58,14 @@ class FirebaseAuthBackend(AuthenticationBackend):
 
 
 def require_auth(*, type: str | None = None):
-    def decorator(func: Callable[[Request, FirebaseUser], Awaitable[Any]]):
+    def decorator(func: Callable[[Request], Awaitable[Any]]):
         @functools.wraps(func)
         async def wrapped(request: Request):
             if not request.user.is_authenticated:
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
             if type is not None and request.user.data["type"] != type:
                 return JSONResponse({"error": "Forbidden"}, status_code=403)
-            return await func(request, request.user)
+            return await func(request)
 
         return wrapped
 

@@ -95,7 +95,7 @@ class EventSchema(FirebaseSchema):
 
 class EventOrganizationSchema(FirebaseSchema):
     id = fields.Str()
-    maxStudents = fields.Number()
+    maxStudents = fields.Int()
     notes = fields.Str()
     customFields = fields.Dict()
     code = fields.Str()
@@ -106,7 +106,7 @@ class EventStudentSchema(FirebaseSchema):
     email = fields.Str()
     fname = fields.Str()
     lname = fields.Str()
-    grade = Union([fields.Number(), fields.Str()])
+    grade = Union([fields.Int(), fields.Str()])
     user = DocumentReference()
     org = DocumentReference()
     team = DocumentReference()
