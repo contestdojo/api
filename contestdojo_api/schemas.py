@@ -110,11 +110,11 @@ class EventOrganizationSchema(FirebaseSchema):
         super().__init__(*args, **kwargs)
         self.event = event
 
-    id = fields.Str()
+    id = fields.Str(dump_only=True)
     maxStudents = fields.Int()
     notes = fields.Str()
-    customFields = fields.Dict()
-    code = fields.Str()
+    customFields = fields.Dict(dump_only=True)
+    code = fields.Str(dump_only=True)
 
 
 class EventStudentSchema(FirebaseSchema):
@@ -122,18 +122,18 @@ class EventStudentSchema(FirebaseSchema):
         super().__init__(*args, **kwargs)
         self.event = event
 
-    id = fields.Str()
-    email = fields.Str()
-    fname = fields.Str()
-    lname = fields.Str()
+    id = fields.Str(dump_only=True)
+    email = fields.Str(dump_only=True)
+    fname = fields.Str(dump_only=True)
+    lname = fields.Str(dump_only=True)
     grade = Union([fields.Int(), fields.Str()])
-    user = DocumentReference(collection=db.users)
+    user = DocumentReference(collection=db.users, dump_only=True)
     org = DocumentReference(collection=db.orgs)
     team = DocumentReference(collection=lambda f: db.eventTeams(f.parent.event.id))
     number = fields.Str()
     waiver = Union([fields.Bool(), fields.Str()])
     notes = fields.Str()
-    customFields = fields.Dict()
+    customFields = fields.Dict(dump_only=True)
 
 
 class EventTeamSchema(FirebaseSchema):
@@ -141,11 +141,11 @@ class EventTeamSchema(FirebaseSchema):
         super().__init__(*args, **kwargs)
         self.event = event
 
-    id = fields.Str()
+    id = fields.Str(dump_only=True)
     name = fields.Str()
     org = DocumentReference(collection=db.orgs)
     number = fields.Str()
-    scoreReport = fields.Str()
+    scoreReport = fields.Str(dump_only=True)
     notes = fields.Str()
-    customFields = fields.Dict()
-    code = fields.Str()
+    customFields = fields.Dict(dump_only=True)
+    code = fields.Str(dump_only=True)
