@@ -5,7 +5,6 @@ from starlette.routing import Route
 from ..auth import require_auth
 from ..firebase import db
 from ..schemas import EntitySchema
-from ..utils import chunks
 
 
 @require_auth(type="admin")

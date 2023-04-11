@@ -1,5 +1,6 @@
 import asyncio
 
+from marshmallow import Schema, fields
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
@@ -7,6 +8,7 @@ from starlette.routing import Route
 from ..auth import require_auth
 from ..firebase import db
 from ..schemas import (
+    DocumentReference,
     EventOrganizationSchema,
     EventStudentSchema,
     EventTeamSchema,
@@ -22,7 +24,7 @@ async def list_event_orgs(request: Request):
     rootOrgs = {x.id: x for x in rootOrgs}
     merged = [
         {
-            **EventOrganizationSchema().dump_firestore(x),
+            **EventOrganizationSchema(request.event).dump_firestore(x),
             **OrganizationSchema().dump_firestore(rootOrgs[x.id]),
         }
         for x in results
@@ -35,7 +37,7 @@ async def list_event_orgs(request: Request):
 async def get_event_org(request: Request):
     id = request.path_params["org_id"]
     result = await db.eventOrg(request.event.id, id).get()
-    return JSONResponse(EventOrganizationSchema().dump_firestore(result))
+    return JSONResponse(EventOrganizationSchema(request.event).dump_firestore(result))
 
 
 @require_auth(type="admin")
@@ -45,7 +47,7 @@ async def list_event_teams(request: Request):
     if org_id := request.query_params.get("org"):
         ref = ref.where("org", "==", db.org(org_id))
     results = await ref.get()
-    return JSONResponse([EventTeamSchema().dump_firestore(x) for x in results])
+    return JSONResponse([EventTeamSchema(request.event).dump_firestore(x) for x in results])
 
 
 @require_auth(type="admin")
@@ -53,7 +55,7 @@ async def list_event_teams(request: Request):
 async def get_event_team(request: Request):
     id = request.path_params["team_id"]
     result = await db.eventTeam(request.event.id, id).get()
-    return JSONResponse(EventTeamSchema().dump_firestore(result))
+    return JSONResponse(EventTeamSchema(request.event).dump_firestore(result))
 
 
 @require_auth(type="admin")
@@ -65,7 +67,7 @@ async def list_event_students(request: Request):
     if team_id := request.query_params.get("team"):
         ref = ref.where("team", "==", db.eventTeam(request.event.id, team_id))
     results = await ref.get()
-    return JSONResponse([EventStudentSchema().dump_firestore(x) for x in results])
+    return JSONResponse([EventStudentSchema(request.event).dump_firestore(x) for x in results])
 
 
 @require_auth(type="admin")
@@ -73,7 +75,7 @@ async def list_event_students(request: Request):
 async def get_event_student(request: Request):
     id = request.path_params["student_id"]
     result = await db.eventStudent(request.event.id, id).get()
-    return JSONResponse(EventStudentSchema().dump_firestore(result))
+    return JSONResponse(EventStudentSchema(request.event).dump_firestore(result))
 
 
 routes = [

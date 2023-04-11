@@ -5,13 +5,25 @@ from .firebase import db
 
 
 class DocumentReference(fields.Field):
+    def __init__(self, *args, collection=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._collection = collection
+
+    @property
+    def collection(self):
+        if callable(self._collection):
+            return self._collection(self)
+        return self._collection
+
     def _serialize(self, value, attr, obj, **kwargs):
         if value is None:
             return None
-        return value.path
+        if value.parent != self.collection:
+            raise ValueError(f"DocumentReference must be in collection {self.collection}")
+        return value.id
 
     def _deserialize(self, value, attr, data, **kwargs):
-        return db.document(value)
+        return self.collection.document(value)
 
 
 class FirebaseSchema(Schema):
@@ -30,7 +42,7 @@ class UserSchema(FirebaseSchema):
 class OrganizationSchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
-    admin = DocumentReference()
+    admin = DocumentReference(collection=db.users)
     address = fields.Str()
     city = fields.Str()
     state = fields.Str()
@@ -42,7 +54,7 @@ class OrganizationSchema(FirebaseSchema):
 class EntitySchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
-    admins = fields.List(DocumentReference())
+    admins = fields.List(DocumentReference(collection=db.users))
     stripeAccount = fields.Str()
 
 
@@ -76,7 +88,7 @@ class EventSchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
     date = fields.DateTime()
-    owner = DocumentReference()
+    owner = DocumentReference(collection=db.entities)
     frozen = fields.Bool()
     hide = fields.Bool()
     costPerStudent = fields.Number()
@@ -94,6 +106,10 @@ class EventSchema(FirebaseSchema):
 
 
 class EventOrganizationSchema(FirebaseSchema):
+    def __init__(self, event, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event = event
+
     id = fields.Str()
     maxStudents = fields.Int()
     notes = fields.Str()
@@ -102,14 +118,18 @@ class EventOrganizationSchema(FirebaseSchema):
 
 
 class EventStudentSchema(FirebaseSchema):
+    def __init__(self, event, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event = event
+
     id = fields.Str()
     email = fields.Str()
     fname = fields.Str()
     lname = fields.Str()
     grade = Union([fields.Int(), fields.Str()])
-    user = DocumentReference()
-    org = DocumentReference()
-    team = DocumentReference()
+    user = DocumentReference(collection=db.users)
+    org = DocumentReference(collection=db.orgs)
+    team = DocumentReference(collection=lambda f: db.eventTeams(f.parent.event.id))
     number = fields.Str()
     waiver = Union([fields.Bool(), fields.Str()])
     notes = fields.Str()
@@ -117,9 +137,13 @@ class EventStudentSchema(FirebaseSchema):
 
 
 class EventTeamSchema(FirebaseSchema):
+    def __init__(self, event, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event = event
+
     id = fields.Str()
     name = fields.Str()
-    org = DocumentReference()
+    org = DocumentReference(collection=db.orgs)
     number = fields.Str()
     scoreReport = fields.Str()
     notes = fields.Str()

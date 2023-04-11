@@ -18,6 +18,9 @@ class Database:
     def __init__(self, client: AsyncClient) -> None:
         self.client = client
 
+    def collection(self, *path: str):
+        return self.client.collection(*path)
+
     def document(self, *path: str):
         return self.client.document(*path)
 
