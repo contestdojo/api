@@ -13,7 +13,7 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from contestdojo_api.firebase import auth, firestore
+from .firebase import auth, firestore
 
 
 class UserData(TypedDict):

@@ -4,10 +4,10 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from contestdojo_api.auth import FirebaseUser, require_auth
-from contestdojo_api.firebase import db
-from contestdojo_api.schemas import EventSchema
-from contestdojo_api.utils import chunks
+from ..auth import FirebaseUser, require_auth
+from ..firebase import db
+from ..schemas import EventSchema
+from ..utils import chunks
 
 
 @require_auth(type="admin")

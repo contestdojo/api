@@ -4,7 +4,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore_async as firebase_firestore_async
 from google.cloud.firestore import AsyncClient
 
-from contestdojo_api import settings
+from . import settings
 
 __all__ = (
     "app",

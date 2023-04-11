@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 from marshmallow_union import Union
 
-from contestdojo_api.firebase import db
+from .firebase import db
 
 
 class DocumentReference(fields.Field):
