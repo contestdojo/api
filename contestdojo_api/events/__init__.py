@@ -19,14 +19,14 @@ async def list_events(request: Request, user: FirebaseUser):
     ]
     eventChunks = await asyncio.gather(*fetchEventChunks)
     events = [x for ch in eventChunks for x in ch]
-    return JSONResponse([EventSchema().dump(x.to_dict()) for x in events])
+    return JSONResponse([EventSchema().dump_firestore(x) for x in events])
 
 
 @require_auth(type="admin")
 async def get_event(request: Request, user: FirebaseUser):
     id = request.path_params["id"]
     event = await db.event(id).get()
-    return JSONResponse(EventSchema().dump(event.to_dict()))
+    return JSONResponse(EventSchema().dump_firestore(event))
 
 
 routes = [

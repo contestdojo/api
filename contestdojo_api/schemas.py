@@ -14,7 +14,12 @@ class DocumentReference(fields.Field):
         return db.document(value)
 
 
-class UserSchema(Schema):
+class FirebaseSchema(Schema):
+    def dump_firestore(self, obj):
+        return self.dump({"id": obj.id, **obj.to_dict()})
+
+
+class UserSchema(FirebaseSchema):
     id = fields.Str()
     email = fields.Str()
     fname = fields.Str()
@@ -22,7 +27,7 @@ class UserSchema(Schema):
     type = fields.Str()
 
 
-class OrganizationSchema(Schema):
+class OrganizationSchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
     admin = DocumentReference()
@@ -34,31 +39,31 @@ class OrganizationSchema(Schema):
     adminData = fields.Nested(UserSchema)
 
 
-class EntitySchema(Schema):
+class EntitySchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
     admins = fields.List(DocumentReference())
     stripeAccount = fields.Str()
 
 
-class EventCostAdjustmentRuleSchema(Schema):
+class EventCostAdjustmentRuleSchema(FirebaseSchema):
     field = fields.Str()
     rule = fields.Str()
     value = fields.Str()
 
 
-class EventCostAdjustmentSchema(Schema):
+class EventCostAdjustmentSchema(FirebaseSchema):
     rule = fields.Nested(EventCostAdjustmentRuleSchema)
     adjustment = fields.Number()
 
 
-class EventCustomFieldFlagsSchema(Schema):
+class EventCustomFieldFlagsSchema(FirebaseSchema):
     required = fields.Bool()
     editable = fields.Bool()
     hidden = fields.Bool()
 
 
-class EventCustomFieldSchema(Schema):
+class EventCustomFieldSchema(FirebaseSchema):
     id = fields.Str()
     label = fields.Str()
     choices = fields.List(fields.Str())
@@ -67,7 +72,7 @@ class EventCustomFieldSchema(Schema):
     flags = fields.Nested(EventCustomFieldFlagsSchema)
 
 
-class EventSchema(Schema):
+class EventSchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
     date = fields.DateTime()
@@ -88,7 +93,7 @@ class EventSchema(Schema):
     studentRegistrationEnabled = fields.Bool()
 
 
-class EventOrganizationSchema(Schema):
+class EventOrganizationSchema(FirebaseSchema):
     id = fields.Str()
     maxStudents = fields.Number()
     notes = fields.Str()
@@ -96,7 +101,7 @@ class EventOrganizationSchema(Schema):
     code = fields.Str()
 
 
-class EventStudentSchema(Schema):
+class EventStudentSchema(FirebaseSchema):
     id = fields.Str()
     email = fields.Str()
     fname = fields.Str()
@@ -111,7 +116,7 @@ class EventStudentSchema(Schema):
     customFields = fields.Dict()
 
 
-class EventTeamSchema(Schema):
+class EventTeamSchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
     org = DocumentReference()

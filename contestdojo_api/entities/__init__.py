@@ -11,14 +11,14 @@ from contestdojo_api.utils import chunks
 @require_auth(type="admin")
 async def list_entities(request: Request, user: FirebaseUser):
     entities = await db.entities.where("admins", "array_contains", db.user(user.uid)).get()
-    return JSONResponse([EntitySchema().dump(x.to_dict()) for x in entities])
+    return JSONResponse([EntitySchema().dump_firestore(x) for x in entities])
 
 
 @require_auth(type="admin")
 async def get_entity(request: Request, user: FirebaseUser):
     id = request.path_params["id"]
     entity = await db.entity(id).get()
-    return JSONResponse(EntitySchema().dump(entity.to_dict()))
+    return JSONResponse(EntitySchema().dump_firestore(entity))
 
 
 routes = [
