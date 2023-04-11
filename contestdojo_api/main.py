@@ -12,4 +12,5 @@ app = Starlette(
     routes=[
         Route("/", index),
     ],
+    middleware=[auth.middleware],
 )
