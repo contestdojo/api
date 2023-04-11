@@ -806,6 +806,42 @@ files = [
 ]
 
 [[package]]
+name = "marshmallow"
+version = "3.19.0"
+description = "A lightweight library for converting complex datatypes to and from native Python datatypes."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "marshmallow-3.19.0-py3-none-any.whl", hash = "sha256:93f0958568da045b0021ec6aeb7ac37c81bfcccbb9a0e7ed8559885070b3a19b"},
+    {file = "marshmallow-3.19.0.tar.gz", hash = "sha256:90032c0fd650ce94b6ec6dc8dfeb0e3ff50c144586462c389b81a07205bedb78"},
+]
+
+[package.dependencies]
+packaging = ">=17.0"
+
+[package.extras]
+dev = ["flake8 (==5.0.4)", "flake8-bugbear (==22.10.25)", "mypy (==0.990)", "pre-commit (>=2.4,<3.0)", "pytest", "pytz", "simplejson", "tox"]
+docs = ["alabaster (==0.7.12)", "autodocsumm (==0.2.9)", "sphinx (==5.3.0)", "sphinx-issues (==3.0.1)", "sphinx-version-warning (==1.1.2)"]
+lint = ["flake8 (==5.0.4)", "flake8-bugbear (==22.10.25)", "mypy (==0.990)", "pre-commit (>=2.4,<3.0)"]
+tests = ["pytest", "pytz", "simplejson"]
+
+[[package]]
+name = "marshmallow-union"
+version = "0.1.15.post1"
+description = "Union fields for marshmallow."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "marshmallow-union-0.1.15.post1.tar.gz", hash = "sha256:c08f0a87891ae73dd2b5d4a154bc7daea20c3bc0f99ca0b6a26570c927d20c8c"},
+    {file = "marshmallow_union-0.1.15.post1-py2.py3-none-any.whl", hash = "sha256:1e21b759c76735305f99179c1a16759ebb9629733159628241b3f2117ff55e86"},
+]
+
+[package.dependencies]
+marshmallow = ">=3.0.0"
+
+[[package]]
 name = "msgpack"
 version = "1.0.5"
 description = "MessagePack serializer"
@@ -894,7 +930,7 @@ files = [
 name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1420,4 +1456,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "36b6dbb7e4930ce1f45a308efb97373c02b5d3f8ba4cdc0243b656c77b24841f"
+content-hash = "bce1bac351eecd225720720be407b1ad376706450b9716d8d1f30995380af78e"
