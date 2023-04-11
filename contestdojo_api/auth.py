@@ -67,7 +67,7 @@ def require_auth(*, type: str | None = None):
         async def wrapped(request: Request):
             if not request.user.is_authenticated:
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
-            if request.user.data["type"] != type:
+            if type is not None and request.user.data["type"] != type:
                 return JSONResponse({"error": "Forbidden"}, status_code=403)
             return await func(request, request.user)
 
