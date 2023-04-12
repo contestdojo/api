@@ -112,11 +112,11 @@ async def update_event_student(request: Request):
 routes = [
     Route("/orgs/", list_event_orgs),
     Route("/orgs/{org_id}", get_event_org),
-    Route("/orgs/{org_id}", update_event_org, methods=["POST"]),
+    Route("/orgs/{org_id}", update_event_org, methods=["PATCH"]),
     Route("/teams/", list_event_teams),
     Route("/teams/{team_id}", get_event_team),
-    Route("/teams/{team_id}", update_event_team, methods=["POST"]),
+    Route("/teams/{team_id}", update_event_team, methods=["PATCH"]),
     Route("/students/", list_event_students),
     Route("/students/{student_id}", get_event_student),
-    Route("/students/{student_id}", update_event_student, methods=["POST"]),
+    Route("/students/{student_id}", update_event_student, methods=["PATCH"]),
 ]
