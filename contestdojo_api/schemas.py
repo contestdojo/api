@@ -113,7 +113,7 @@ class EventOrganizationSchema(FirebaseSchema):
     id = fields.Str(dump_only=True)
     maxStudents = fields.Int()
     notes = fields.Str()
-    customFields = fields.Dict(dump_only=True)
+    customFields = fields.Dict()
     code = fields.Str(dump_only=True)
 
 
@@ -133,7 +133,7 @@ class EventStudentSchema(FirebaseSchema):
     number = fields.Str()
     waiver = Union([fields.Bool(), fields.Str()])
     notes = fields.Str()
-    customFields = fields.Dict(dump_only=True)
+    customFields = fields.Dict()
 
 
 class EventTeamSchema(FirebaseSchema):
@@ -147,5 +147,5 @@ class EventTeamSchema(FirebaseSchema):
     number = fields.Str()
     scoreReport = fields.Str(dump_only=True)
     notes = fields.Str()
-    customFields = fields.Dict(dump_only=True)
+    customFields = fields.Dict()
     code = fields.Str(dump_only=True)
