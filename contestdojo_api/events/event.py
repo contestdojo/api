@@ -6,12 +6,7 @@ from starlette.routing import Route
 
 from ..auth import require_auth
 from ..firebase import db
-from ..schemas import (
-    EventOrganizationSchema,
-    EventStudentSchema,
-    EventTeamSchema,
-    OrganizationSchema,
-)
+from ..schemas import EventOrganizationSchema, EventStudentSchema, EventTeamSchema, OrganizationSchema
 from .decorators import fetch_event
 
 
@@ -44,7 +39,7 @@ async def update_event_org(request: Request):
     schema = EventOrganizationSchema(request.event)
     update = schema.load(await request.json())
     ref = db.eventOrg(request.event.id, request.path_params["org_id"])
-    await ref.update(update)
+    await ref.set(update, merge=True)
     result = await ref.get()
     return JSONResponse(schema.dump_firestore(result))
 
@@ -73,7 +68,7 @@ async def update_event_team(request: Request):
     schema = EventTeamSchema(request.event)
     update = schema.load(await request.json())
     ref = db.eventTeam(request.event.id, request.path_params["team_id"])
-    await ref.update(update)
+    await ref.set(update, merge=True)
     result = await ref.get()
     return JSONResponse(schema.dump_firestore(result))
 
@@ -104,7 +99,7 @@ async def update_event_student(request: Request):
     schema = EventStudentSchema(request.event)
     update = schema.load(await request.json())
     ref = db.eventStudent(request.event.id, request.path_params["student_id"])
-    await ref.update(update)
+    await ref.set(update, merge=True)
     result = await ref.get()
     return JSONResponse(schema.dump_firestore(result))
 
