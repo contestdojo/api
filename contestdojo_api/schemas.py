@@ -111,6 +111,7 @@ class EventOrganizationSchema(FirebaseSchema):
         self.event = event
 
     id = fields.Str(dump_only=True)
+    name = fields.Str(dump_only=True)
     maxStudents = fields.Int()
     notes = fields.Str()
     customFields = fields.Dict()

@@ -6,12 +6,7 @@ from starlette.routing import Route
 
 from ..auth import require_auth
 from ..firebase import db
-from ..schemas import (
-    EventOrganizationSchema,
-    EventStudentSchema,
-    EventTeamSchema,
-    OrganizationSchema,
-)
+from ..schemas import EventOrganizationSchema, EventStudentSchema, EventTeamSchema, OrganizationSchema
 from .decorators import fetch_event
 
 
@@ -34,8 +29,14 @@ async def list_event_orgs(request: Request):
 @fetch_event()
 async def get_event_org(request: Request):
     id = request.path_params["org_id"]
+    root_result = await db.org(id).get()
     result = await db.eventOrg(request.event.id, id).get()
-    return JSONResponse(EventOrganizationSchema(request.event).dump_firestore(result))
+    result = {
+        "id": result.id,
+        "name": root_result.to_dict()["name"],
+        **result.to_dict(),
+    }
+    return JSONResponse(EventOrganizationSchema(request.event).dump(result))
 
 
 @require_auth(type="admin")
