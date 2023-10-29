@@ -6,7 +6,12 @@ from starlette.routing import Route
 
 from ..auth import require_auth
 from ..firebase import db
-from ..schemas import EventOrganizationSchema, EventStudentSchema, EventTeamSchema, OrganizationSchema
+from ..schemas import (
+    EventOrganizationSchema,
+    EventStudentSchema,
+    EventTeamSchema,
+    OrganizationSchema,
+)
 from .decorators import fetch_event
 
 
@@ -50,6 +55,8 @@ async def list_event_teams(request: Request):
     ref = db.eventTeams(request.event.id)
     if org_id := request.query_params.get("org"):
         ref = ref.where("org", "==", db.org(org_id))
+    if number := request.query_params.get("number"):
+        ref = ref.where("number", "==", number)
     results = await ref.get()
     return JSONResponse([EventTeamSchema(request.event).dump_firestore(x) for x in results])
 
@@ -81,6 +88,8 @@ async def list_event_students(request: Request):
         ref = ref.where("org", "==", db.org(org_id))
     if team_id := request.query_params.get("team"):
         ref = ref.where("team", "==", db.eventTeam(request.event.id, team_id))
+    if number := request.query_params.get("number"):
+        ref = ref.where("number", "==", number)
     results = await ref.get()
     return JSONResponse([EventStudentSchema(request.event).dump_firestore(x) for x in results])
 
