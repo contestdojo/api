@@ -1,7 +1,9 @@
 from marshmallow import ValidationError
 from starlette.applications import Starlette
+from starlette.middleware import Middleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from . import auth, entities, events
 
@@ -21,6 +23,6 @@ app = Starlette(
         Mount("/entities", routes=entities.routes),
         Mount("/events", routes=events.routes),
     ],
-    middleware=[auth.middleware],
+    middleware=[Middleware(ProxyHeadersMiddleware), auth.middleware],
     exception_handlers={ValidationError: handle_marshmallow_validation_error},
 )
