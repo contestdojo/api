@@ -116,6 +116,8 @@ class EventOrganizationSchema(FirebaseSchema):
     notes = fields.Str()
     customFields = fields.Dict()
     code = fields.Str(dump_only=True)
+    startTime = fields.DateTime()
+    updateTime = fields.DateTime()
 
 
 class EventStudentSchema(FirebaseSchema):
