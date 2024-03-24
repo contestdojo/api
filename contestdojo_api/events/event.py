@@ -1,7 +1,7 @@
 import asyncio
 
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
 from ..auth import require_auth
@@ -56,6 +56,13 @@ async def update_event_org(request: Request):
 
 @require_auth(type="admin")
 @fetch_event()
+async def delete_event_org(request: Request):
+    await db.eventOrg(request.event.id, request.path_params["org_id"]).delete()
+    return Response(status_code=204)
+
+
+@require_auth(type="admin")
+@fetch_event()
 async def list_event_teams(request: Request):
     ref = db.eventTeams(request.event.id)
     if org_id := request.query_params.get("org"):
@@ -87,6 +94,13 @@ async def update_event_team(request: Request):
     await ref.set(update, merge=True)
     result = await ref.get()
     return JSONResponse(schema.dump_firestore(result))
+
+
+@require_auth(type="admin")
+@fetch_event()
+async def delete_event_team(request: Request):
+    await db.eventTeam(request.event.id, request.path_params["team_id"]).delete()
+    return Response(status_code=204)
 
 
 @require_auth(type="admin")
@@ -126,14 +140,24 @@ async def update_event_student(request: Request):
     return JSONResponse(schema.dump_firestore(result))
 
 
+@require_auth(type="admin")
+@fetch_event()
+async def delete_event_student(request: Request):
+    await db.eventStudent(request.event.id, request.path_params["student_id"]).delete()
+    return Response(status_code=204)
+
+
 routes = [
     Route("/orgs/", list_event_orgs),
     Route("/orgs/{org_id}", get_event_org),
     Route("/orgs/{org_id}", update_event_org, methods=["PATCH"]),
+    Route("/orgs/{org_id}", delete_event_org, methods=["DELETE"]),
     Route("/teams/", list_event_teams),
     Route("/teams/{team_id}", get_event_team),
     Route("/teams/{team_id}", update_event_team, methods=["PATCH"]),
+    Route("/teams/{team_id}", delete_event_team, methods=["DELETE"]),
     Route("/students/", list_event_students),
     Route("/students/{student_id}", get_event_student),
     Route("/students/{student_id}", update_event_student, methods=["PATCH"]),
+    Route("/students/{student_id}", delete_event_student, methods=["DELETE"]),
 ]
