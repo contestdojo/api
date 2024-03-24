@@ -31,6 +31,8 @@ async def get_event_org(request: Request):
     id = request.path_params["org_id"]
     root_result = await db.org(id).get()
     result = await db.eventOrg(request.event.id, id).get()
+    if not result.exists:
+        return JSONResponse({"error": "Not found"}, status_code=404)
     result = {
         "id": result.id,
         "name": root_result.to_dict()["name"],
@@ -45,6 +47,8 @@ async def update_event_org(request: Request):
     schema = EventOrganizationSchema(request.event)
     update = schema.load(await request.json())
     ref = db.eventOrg(request.event.id, request.path_params["org_id"])
+    if not (await ref.get()).exists:
+        return JSONResponse({"error": "Not found"}, status_code=404)
     await ref.set(update, merge=True)
     result = await ref.get()
     return JSONResponse(schema.dump_firestore(result))
@@ -67,6 +71,8 @@ async def list_event_teams(request: Request):
 async def get_event_team(request: Request):
     id = request.path_params["team_id"]
     result = await db.eventTeam(request.event.id, id).get()
+    if not result.exists:
+        return JSONResponse({"error": "Not found"}, status_code=404)
     return JSONResponse(EventTeamSchema(request.event).dump_firestore(result))
 
 
@@ -76,6 +82,8 @@ async def update_event_team(request: Request):
     schema = EventTeamSchema(request.event)
     update = schema.load(await request.json())
     ref = db.eventTeam(request.event.id, request.path_params["team_id"])
+    if not (await ref.get()).exists:
+        return JSONResponse({"error": "Not found"}, status_code=404)
     await ref.set(update, merge=True)
     result = await ref.get()
     return JSONResponse(schema.dump_firestore(result))
@@ -100,6 +108,8 @@ async def list_event_students(request: Request):
 async def get_event_student(request: Request):
     id = request.path_params["student_id"]
     result = await db.eventStudent(request.event.id, id).get()
+    if not result.exists:
+        return JSONResponse({"error": "Not found"}, status_code=404)
     return JSONResponse(EventStudentSchema(request.event).dump_firestore(result))
 
 
@@ -109,6 +119,8 @@ async def update_event_student(request: Request):
     schema = EventStudentSchema(request.event)
     update = schema.load(await request.json())
     ref = db.eventStudent(request.event.id, request.path_params["student_id"])
+    if not (await ref.get()).exists:
+        return JSONResponse({"error": "Not found"}, status_code=404)
     await ref.set(update, merge=True)
     result = await ref.get()
     return JSONResponse(schema.dump_firestore(result))
