@@ -84,6 +84,13 @@ class EventCustomFieldSchema(FirebaseSchema):
     flags = fields.Nested(EventCustomFieldFlagsSchema)
 
 
+class EventAddOnSchema(FirebaseSchema):
+    id = fields.Str()
+    name = fields.Str()
+    cost = fields.Int()
+    enabled = fields.Bool()
+
+
 class EventSchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
@@ -102,6 +109,7 @@ class EventSchema(FirebaseSchema):
     customFields = fields.List(fields.Nested(EventCustomFieldSchema))
     customOrgFields = fields.List(fields.Nested(EventCustomFieldSchema))
     customTeamFields = fields.List(fields.Nested(EventCustomFieldSchema))
+    addOns = fields.List(fields.Nested(EventAddOnSchema))
     studentRegistrationEnabled = fields.Bool()
 
 
@@ -115,6 +123,7 @@ class EventOrganizationSchema(FirebaseSchema):
     maxStudents = fields.Int()
     notes = fields.Str()
     customFields = fields.Dict()
+    addOns = fields.Dict()
     code = fields.Str(dump_only=True)
     startTime = fields.DateTime()
     updateTime = fields.DateTime()
@@ -154,3 +163,18 @@ class EventTeamSchema(FirebaseSchema):
     customFields = fields.Dict()
     code = fields.Str(dump_only=True)
     checkInPool = fields.Str(dump_only=True)
+
+
+# class BulkUpdateEntrySchema(Schema):
+
+# class BulkUpdateSchema(Schema):
+#     id = fields.Str()
+#     data = fields.List(
+#         Union(
+#             [fields.Nested(EventOrganizationSchema)]
+#         )
+#         fields.Dict(
+#             keys=fields.Str(),
+#             values=fields.Str()
+#         )
+#     )
