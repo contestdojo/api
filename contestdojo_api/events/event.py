@@ -113,6 +113,8 @@ async def list_event_students(request: Request):
         ref = ref.where("team", "==", db.eventTeam(request.event.id, team_id))
     if number := request.query_params.get("number"):
         ref = ref.where("number", "==", number)
+    if email := request.query_params.get("email"):
+        ref = ref.where("email", "==", email)
     results = await ref.get()
     return JSONResponse([EventStudentSchema(request.event).dump_firestore(x) for x in results])
 
