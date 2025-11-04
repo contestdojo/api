@@ -5,9 +5,10 @@ RUN pip install poetry
 
 COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false
-RUN poetry install --only main
+RUN poetry install --only main --no-root
 
 COPY . .
+RUN poetry install --only main
 
 EXPOSE 8000
 CMD ["uvicorn", "contestdojo_api.main:app", "--host", "::", "--port", "8000"]
