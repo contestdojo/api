@@ -148,6 +148,7 @@ class EventStudentSchema(FirebaseSchema):
     customFields = fields.Dict()
     checkInPool = fields.Str(dump_only=True)
     roomAssignments = fields.Dict(dump_only=True)
+    isCheckedIn = fields.Bool(dump_only=True)
 
 
 class EventTeamSchema(FirebaseSchema):
@@ -165,6 +166,7 @@ class EventTeamSchema(FirebaseSchema):
     code = fields.Str(dump_only=True)
     checkInPool = fields.Str(dump_only=True)
     roomAssignments = fields.Dict(dump_only=True)
+    isCheckedIn = fields.Bool(dump_only=True)
 
 
 # class BulkUpdateEntrySchema(Schema):
