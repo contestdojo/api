@@ -102,6 +102,7 @@ class EventSchema(FirebaseSchema):
     costAdjustments = fields.List(fields.Nested(EventCostAdjustmentSchema))
     studentsPerTeam = fields.Int()
     maxTeams = fields.Int()
+    billByTeam = fields.Bool()
     scoreReportsAvailable = fields.Bool()
     description = fields.Str()
     costDescription = fields.Str()
