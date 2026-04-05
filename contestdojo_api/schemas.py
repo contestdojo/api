@@ -66,7 +66,7 @@ class EventCostAdjustmentRuleSchema(FirebaseSchema):
 
 class EventCostAdjustmentSchema(FirebaseSchema):
     rule = fields.Nested(EventCostAdjustmentRuleSchema)
-    adjustment = fields.Number()
+    adjustment = fields.Float()
 
 
 class EventCustomFieldFlagsSchema(FirebaseSchema):
@@ -98,7 +98,7 @@ class EventSchema(FirebaseSchema):
     owner = DocumentReference(collection=db.entities)
     frozen = fields.Bool()
     hide = fields.Bool()
-    costPerStudent = fields.Number()
+    costPerStudent = fields.Float()
     costAdjustments = fields.List(fields.Nested(EventCostAdjustmentSchema))
     studentsPerTeam = fields.Int()
     maxTeams = fields.Int()
