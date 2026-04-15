@@ -17,7 +17,7 @@ def handle_marshmallow_validation_error(request, exc):
 
 
 app = Starlette(
-    debug=True,
+    debug=False,
     routes=[
         Route("/", index),
         Mount("/entities", routes=entities.routes),
