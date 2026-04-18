@@ -91,6 +91,18 @@ class EventAddOnSchema(FirebaseSchema):
     enabled = fields.Bool()
 
 
+class EventRoomSchema(FirebaseSchema):
+    id = fields.Str()
+    maxStudents = fields.Int()
+    preferTeamSize = fields.List(fields.Int())
+    priority = fields.Int(load_default=0)
+
+
+class EventRoomAssignmentSectionSchema(FirebaseSchema):
+    id = fields.Str()
+    rooms = fields.List(fields.Nested(EventRoomSchema))
+
+
 class EventSchema(FirebaseSchema):
     id = fields.Str()
     name = fields.Str()
@@ -98,20 +110,29 @@ class EventSchema(FirebaseSchema):
     owner = DocumentReference(collection=db.entities)
     frozen = fields.Bool()
     hide = fields.Bool()
+    purchaseSeats = fields.Str()
+    purchaseSeatsEnabled = fields.Bool()
     costPerStudent = fields.Float()
     costAdjustments = fields.List(fields.Nested(EventCostAdjustmentSchema))
     studentsPerTeam = fields.Int()
     maxTeams = fields.Int()
-    billByTeam = fields.Bool()
+    maxStudents = fields.Int()
+    maxStudentsPerOrg = fields.Int()
     scoreReportsAvailable = fields.Bool()
     description = fields.Str()
     costDescription = fields.Str()
+    waiverDescription = fields.Str()
     waiver = Union([fields.Bool(), fields.Str()])
     customFields = fields.List(fields.Nested(EventCustomFieldSchema))
     customOrgFields = fields.List(fields.Nested(EventCustomFieldSchema))
     customTeamFields = fields.List(fields.Nested(EventCustomFieldSchema))
-    addOns = fields.List(fields.Nested(EventAddOnSchema))
     studentRegistrationEnabled = fields.Bool()
+    enableCoachCheckIn = fields.Bool()
+    checkInInstructions = fields.Str()
+    checkInFields = fields.List(fields.Nested(EventCustomFieldSchema))
+    checkInWebhookUrl = fields.Str()
+    addOns = fields.List(fields.Nested(EventAddOnSchema))
+    roomAssignments = fields.List(fields.Nested(EventRoomAssignmentSectionSchema))
 
 
 class EventOrganizationSchema(FirebaseSchema):
@@ -148,7 +169,7 @@ class EventStudentSchema(FirebaseSchema):
     notes = fields.Str()
     customFields = fields.Dict()
     checkInPool = fields.Str(dump_only=True)
-    roomAssignments = fields.Dict(dump_only=True)
+    roomAssignments = fields.Dict(keys=fields.Str(), values=fields.Str(), dump_only=True)
     isCheckedIn = fields.Bool(dump_only=True)
 
 
@@ -166,7 +187,7 @@ class EventTeamSchema(FirebaseSchema):
     customFields = fields.Dict()
     code = fields.Str(dump_only=True)
     checkInPool = fields.Str(dump_only=True)
-    roomAssignments = fields.Dict(dump_only=True)
+    roomAssignments = fields.Dict(keys=fields.Str(), values=fields.Str(), dump_only=True)
     isCheckedIn = fields.Bool(dump_only=True)
 
 
