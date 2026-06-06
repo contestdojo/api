@@ -10,6 +10,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from .firebase import auth, firestore
+from .oauth import authenticate_oauth
 
 
 class UserData(TypedDict):
@@ -39,6 +40,15 @@ class FirebaseAuthBackend(AuthenticationBackend):
         if scheme.lower() != "bearer":
             return
 
+        # OIDC access tokens are JWTs (three dot-separated segments). Validate those
+        # against the provider's JWKS; fall through to the legacy api_tokens lookup
+        # for opaque admin tokens.
+        if token.count(".") == 2:
+            result = await authenticate_oauth(token)
+            if result is None:
+                raise AuthenticationError
+            return result
+
         token_snap = await firestore.collection("api_tokens").document(token).get()
         token_data = token_snap.to_dict()
         if token_data is None:
@@ -57,12 +67,27 @@ class FirebaseAuthBackend(AuthenticationBackend):
         return AuthCredentials(), FirebaseUser(user, user_data)
 
 
+def on_auth_error(conn, exc: AuthenticationError) -> JSONResponse:
+    # Starlette's AuthenticationMiddleware defaults to a plain 400 for any
+    # AuthenticationError. A rejected bearer credential should be 401, with a
+    # WWW-Authenticate challenge per RFC 7235.
+    return JSONResponse(
+        {"error": "Unauthorized"},
+        status_code=401,
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
 def require_auth(*, type: str | None = None):
     def decorator(func: Callable[[Request], Awaitable[Any]]):
         @functools.wraps(func)
         async def wrapped(request: Request):
             if not request.user.is_authenticated:
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            # Legacy routes are admin-only and read FirebaseUser.data. OAuth access
+            # tokens authenticate as OAuthUser (no .data) and must not reach them.
+            if not isinstance(request.user, FirebaseUser):
+                return JSONResponse({"error": "Forbidden"}, status_code=403)
             if type is not None and request.user.data["type"] != type:
                 return JSONResponse({"error": "Forbidden"}, status_code=403)
             return await func(request)
@@ -72,4 +97,8 @@ def require_auth(*, type: str | None = None):
     return decorator
 
 
-middleware = Middleware(AuthenticationMiddleware, backend=FirebaseAuthBackend())
+middleware = Middleware(
+    AuthenticationMiddleware,
+    backend=FirebaseAuthBackend(),
+    on_error=on_auth_error,
+)

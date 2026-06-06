@@ -170,16 +170,27 @@ class EventTeamSchema(FirebaseSchema):
     isCheckedIn = fields.Bool(dump_only=True)
 
 
-# class BulkUpdateEntrySchema(Schema):
+# --- OAuth /v1alpha1/me response envelopes ---
 
-# class BulkUpdateSchema(Schema):
-#     id = fields.Str()
-#     data = fields.List(
-#         Union(
-#             [fields.Nested(EventOrganizationSchema)]
-#         )
-#         fields.Dict(
-#             keys=fields.Str(),
-#             values=fields.Str()
-#         )
-#     )
+
+class TeamRefSchema(FirebaseSchema):
+    """A minimal reference to a team (id + name).
+
+    Used in the user-scoped /v1alpha1/me API instead of the full team object so
+    that other students' records are never exposed via one user's access token.
+    """
+
+    id = fields.Str()
+    name = fields.Str()
+
+
+class MyEventSchema(Schema):
+    """The authenticated user's participation in a single event.
+
+    Returned (as a list) by GET /v1alpha1/me/events and (singly) by
+    GET /v1alpha1/me/events/{event_id}.
+    """
+
+    event = fields.Nested(EventSchema)
+    registration = fields.Nested(EventStudentSchema(event=None))
+    team = fields.Nested(TeamRefSchema, allow_none=True)

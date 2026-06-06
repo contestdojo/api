@@ -65,7 +65,9 @@ def _build_spec() -> APISpec:
         EventSchema,
         EventStudentSchema,
         EventTeamSchema,
+        MyEventSchema,
         OrganizationSchema,
+        TeamRefSchema,
         UserSchema,
     )
 
@@ -108,6 +110,9 @@ def _build_spec() -> APISpec:
     spec.components.schema("EventOrganization", schema=EventOrganizationSchema(event=None))
     spec.components.schema("EventStudent", schema=EventStudentSchema(event=None))
     spec.components.schema("EventTeam", schema=EventTeamSchema(event=None))
+
+    spec.components.schema("TeamRef", schema=TeamRefSchema)
+    spec.components.schema("MyEvent", schema=MyEventSchema)
 
     spec.components.schema(
         "Error",
@@ -449,6 +454,61 @@ def _build_spec() -> APISpec:
                 "responses": {
                     "204": {"description": "Deleted"},
                     **_AUTH_ERRORS,
+                },
+            },
+        },
+    )
+
+    # --- OAuth resource server: the authenticated end-user's own data ---
+    # These routes accept OIDC JWT access tokens (issued by the ContestDojo app)
+    # and are gated by the token's scopes rather than admin privileges.
+
+    spec.path(
+        path="/v1alpha1/me/events",
+        operations={
+            "get": {
+                "summary": "List the authenticated user's event participation",
+                "description": (
+                    "Returns the user's participation in every event they are registered "
+                    "for: the event, their own registration, and a reference to their team "
+                    "(id + name). Requires an OAuth access token with the `read:events` "
+                    "scope."
+                ),
+                "operationId": "listMyEvents",
+                "tags": ["Me"],
+                "security": _SECURITY,
+                "responses": {
+                    "200": {
+                        "description": "The user's participation across all events",
+                        "content": _json(_list_of("MyEvent")),
+                    },
+                    **_AUTH_ERRORS,
+                },
+            },
+        },
+    )
+
+    spec.path(
+        path="/v1alpha1/me/events/{event_id}",
+        operations={
+            "get": {
+                "summary": "Get the authenticated user's participation in one event",
+                "description": (
+                    "Returns the user's participation in a single event: the event, their "
+                    "own registration, and a reference to their team (id + name). Requires "
+                    "an OAuth access token with the `read:events` scope."
+                ),
+                "operationId": "getMyEvent",
+                "tags": ["Me"],
+                "security": _SECURITY,
+                "parameters": [_EVENT_ID],
+                "responses": {
+                    "200": {
+                        "description": "The user's participation in the event",
+                        "content": _json(_ref("MyEvent")),
+                    },
+                    **_AUTH_ERRORS,
+                    **_NOT_FOUND,
                 },
             },
         },

@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from . import auth, entities, events, openapi
+from . import auth, entities, events, me, openapi
 
 
 def index(request):
@@ -22,6 +22,7 @@ app = Starlette(
         Route("/", index),
         Mount("/entities", routes=entities.routes),
         Mount("/events", routes=events.routes),
+        Mount("/v1alpha1/me", routes=me.routes),
         *openapi.routes,
     ],
     middleware=[Middleware(ProxyHeadersMiddleware), auth.middleware],
