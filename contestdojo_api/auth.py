@@ -44,7 +44,10 @@ class FirebaseAuthBackend(AuthenticationBackend):
         # against the provider's JWKS; fall through to the legacy api_tokens lookup
         # for opaque admin tokens.
         if token.count(".") == 2:
-            return await authenticate_oauth(token)
+            result = await authenticate_oauth(token)
+            if result is None:
+                raise AuthenticationError
+            return result
 
         token_snap = await firestore.collection("api_tokens").document(token).get()
         token_data = token_snap.to_dict()
@@ -70,6 +73,10 @@ def require_auth(*, type: str | None = None):
         async def wrapped(request: Request):
             if not request.user.is_authenticated:
                 return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            # Legacy routes are admin-only and read FirebaseUser.data. OAuth access
+            # tokens authenticate as OAuthUser (no .data) and must not reach them.
+            if not isinstance(request.user, FirebaseUser):
+                return JSONResponse({"error": "Forbidden"}, status_code=403)
             if type is not None and request.user.data["type"] != type:
                 return JSONResponse({"error": "Forbidden"}, status_code=403)
             return await func(request)
