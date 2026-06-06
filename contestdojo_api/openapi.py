@@ -454,6 +454,73 @@ def _build_spec() -> APISpec:
         },
     )
 
+    # --- OAuth resource server: the authenticated end-user's own data ---
+    # These routes accept OIDC JWT access tokens (issued by the ContestDojo app)
+    # and are gated by the token's scopes rather than admin privileges.
+
+    spec.path(
+        path="/v1alpha1/me/events",
+        operations={
+            "get": {
+                "summary": "List the authenticated user's event registrations",
+                "description": "Requires an OAuth access token with the `events` scope.",
+                "operationId": "listMyEvents",
+                "tags": ["Me"],
+                "security": _SECURITY,
+                "responses": {
+                    "200": {
+                        "description": "The user's registrations across all events",
+                        "content": _json(
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "event": _ref("Event"),
+                                        "student": _ref("EventStudent"),
+                                    },
+                                },
+                            }
+                        ),
+                    },
+                    **_AUTH_ERRORS,
+                },
+            },
+        },
+    )
+
+    spec.path(
+        path="/v1alpha1/me/teams",
+        operations={
+            "get": {
+                "summary": "List the authenticated user's teams",
+                "description": "Requires an OAuth access token with the `teams` scope.",
+                "operationId": "listMyTeams",
+                "tags": ["Me"],
+                "security": _SECURITY,
+                "responses": {
+                    "200": {
+                        "description": "The user's teams across all events, with members",
+                        "content": _json(
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "event": _ref("Event"),
+                                        "team": _ref("EventTeam"),
+                                        "members": _list_of("EventStudent"),
+                                    },
+                                },
+                            }
+                        ),
+                    },
+                    **_AUTH_ERRORS,
+                },
+            },
+        },
+    )
+
     return spec
 
 

@@ -336,6 +336,7 @@ dependencies = [
     { name = "firebase-admin" },
     { name = "marshmallow" },
     { name = "marshmallow-union" },
+    { name = "pyjwt", extra = ["crypto"] },
     { name = "starlette" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -352,6 +353,7 @@ requires-dist = [
     { name = "firebase-admin", specifier = ">=6.1.0" },
     { name = "marshmallow", specifier = ">=3.19.0" },
     { name = "marshmallow-union", specifier = ">=0.1.15.post1" },
+    { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0" },
     { name = "starlette", specifier = ">=0.26.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.21.1" },
 ]

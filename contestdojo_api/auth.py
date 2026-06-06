@@ -10,6 +10,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from .firebase import auth, firestore
+from .oauth import authenticate_oauth
 
 
 class UserData(TypedDict):
@@ -38,6 +39,12 @@ class FirebaseAuthBackend(AuthenticationBackend):
         scheme, token = auth_header.split()
         if scheme.lower() != "bearer":
             return
+
+        # OIDC access tokens are JWTs (three dot-separated segments). Validate those
+        # against the provider's JWKS; fall through to the legacy api_tokens lookup
+        # for opaque admin tokens.
+        if token.count(".") == 2:
+            return await authenticate_oauth(token)
 
         token_snap = await firestore.collection("api_tokens").document(token).get()
         token_data = token_snap.to_dict()

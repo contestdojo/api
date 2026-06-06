@@ -11,6 +11,7 @@ dependencies = [
     "marshmallow>=3.19.0",
     "marshmallow-union>=0.1.15.post1",
     "apispec>=6.10.0",
+    "pyjwt[crypto]>=2.8.0",
 ]
 
 [project.optional-dependencies]
