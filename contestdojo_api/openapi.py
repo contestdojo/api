@@ -65,6 +65,8 @@ def _build_spec() -> APISpec:
         EventSchema,
         EventStudentSchema,
         EventTeamSchema,
+        MyEventSchema,
+        MyTeamSchema,
         OrganizationSchema,
         UserSchema,
     )
@@ -108,6 +110,9 @@ def _build_spec() -> APISpec:
     spec.components.schema("EventOrganization", schema=EventOrganizationSchema(event=None))
     spec.components.schema("EventStudent", schema=EventStudentSchema(event=None))
     spec.components.schema("EventTeam", schema=EventTeamSchema(event=None))
+
+    spec.components.schema("MyEvent", schema=MyEventSchema)
+    spec.components.schema("MyTeam", schema=MyTeamSchema)
 
     spec.components.schema(
         "Error",
@@ -470,18 +475,7 @@ def _build_spec() -> APISpec:
                 "responses": {
                     "200": {
                         "description": "The user's registrations across all events",
-                        "content": _json(
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "event": _ref("Event"),
-                                        "student": _ref("EventStudent"),
-                                    },
-                                },
-                            }
-                        ),
+                        "content": _json(_list_of("MyEvent")),
                     },
                     **_AUTH_ERRORS,
                 },
@@ -501,19 +495,7 @@ def _build_spec() -> APISpec:
                 "responses": {
                     "200": {
                         "description": "The user's teams across all events, with members",
-                        "content": _json(
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "event": _ref("Event"),
-                                        "team": _ref("EventTeam"),
-                                        "members": _list_of("EventStudent"),
-                                    },
-                                },
-                            }
-                        ),
+                        "content": _json(_list_of("MyTeam")),
                     },
                     **_AUTH_ERRORS,
                 },

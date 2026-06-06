@@ -170,16 +170,19 @@ class EventTeamSchema(FirebaseSchema):
     isCheckedIn = fields.Bool(dump_only=True)
 
 
-# class BulkUpdateEntrySchema(Schema):
+# --- OAuth /v1alpha1/me response envelopes ---
 
-# class BulkUpdateSchema(Schema):
-#     id = fields.Str()
-#     data = fields.List(
-#         Union(
-#             [fields.Nested(EventOrganizationSchema)]
-#         )
-#         fields.Dict(
-#             keys=fields.Str(),
-#             values=fields.Str()
-#         )
-#     )
+
+class MyEventSchema(Schema):
+    """One item returned by GET /v1alpha1/me/events."""
+
+    event = fields.Nested(EventSchema)
+    student = fields.Nested(EventStudentSchema(event=None))
+
+
+class MyTeamSchema(Schema):
+    """One item returned by GET /v1alpha1/me/teams."""
+
+    event = fields.Nested(EventSchema)
+    team = fields.Nested(EventTeamSchema(event=None))
+    members = fields.List(fields.Nested(EventStudentSchema(event=None)))
