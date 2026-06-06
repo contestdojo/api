@@ -66,8 +66,8 @@ def _build_spec() -> APISpec:
         EventStudentSchema,
         EventTeamSchema,
         MyEventSchema,
-        MyTeamSchema,
         OrganizationSchema,
+        TeamRefSchema,
         UserSchema,
     )
 
@@ -111,8 +111,8 @@ def _build_spec() -> APISpec:
     spec.components.schema("EventStudent", schema=EventStudentSchema(event=None))
     spec.components.schema("EventTeam", schema=EventTeamSchema(event=None))
 
+    spec.components.schema("TeamRef", schema=TeamRefSchema)
     spec.components.schema("MyEvent", schema=MyEventSchema)
-    spec.components.schema("MyTeam", schema=MyTeamSchema)
 
     spec.components.schema(
         "Error",
@@ -467,14 +467,19 @@ def _build_spec() -> APISpec:
         path="/v1alpha1/me/events",
         operations={
             "get": {
-                "summary": "List the authenticated user's event registrations",
-                "description": "Requires an OAuth access token with the `events` scope.",
+                "summary": "List the authenticated user's event participation",
+                "description": (
+                    "Returns the user's participation in every event they are registered "
+                    "for: the event, their own registration, and a reference to their team "
+                    "(id + name). Requires an OAuth access token with the `read:events` "
+                    "scope."
+                ),
                 "operationId": "listMyEvents",
                 "tags": ["Me"],
                 "security": _SECURITY,
                 "responses": {
                     "200": {
-                        "description": "The user's registrations across all events",
+                        "description": "The user's participation across all events",
                         "content": _json(_list_of("MyEvent")),
                     },
                     **_AUTH_ERRORS,
@@ -484,20 +489,26 @@ def _build_spec() -> APISpec:
     )
 
     spec.path(
-        path="/v1alpha1/me/teams",
+        path="/v1alpha1/me/events/{event_id}",
         operations={
             "get": {
-                "summary": "List the authenticated user's teams",
-                "description": "Requires an OAuth access token with the `teams` scope.",
-                "operationId": "listMyTeams",
+                "summary": "Get the authenticated user's participation in one event",
+                "description": (
+                    "Returns the user's participation in a single event: the event, their "
+                    "own registration, and a reference to their team (id + name). Requires "
+                    "an OAuth access token with the `read:events` scope."
+                ),
+                "operationId": "getMyEvent",
                 "tags": ["Me"],
                 "security": _SECURITY,
+                "parameters": [_EVENT_ID],
                 "responses": {
                     "200": {
-                        "description": "The user's teams across all events, with members",
-                        "content": _json(_list_of("MyTeam")),
+                        "description": "The user's participation in the event",
+                        "content": _json(_ref("MyEvent")),
                     },
                     **_AUTH_ERRORS,
+                    **_NOT_FOUND,
                 },
             },
         },

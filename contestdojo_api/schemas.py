@@ -173,16 +173,24 @@ class EventTeamSchema(FirebaseSchema):
 # --- OAuth /v1alpha1/me response envelopes ---
 
 
+class TeamRefSchema(FirebaseSchema):
+    """A minimal reference to a team (id + name).
+
+    Used in the user-scoped /v1alpha1/me API instead of the full team object so
+    that other students' records are never exposed via one user's access token.
+    """
+
+    id = fields.Str()
+    name = fields.Str()
+
+
 class MyEventSchema(Schema):
-    """One item returned by GET /v1alpha1/me/events."""
+    """The authenticated user's participation in a single event.
+
+    Returned (as a list) by GET /v1alpha1/me/events and (singly) by
+    GET /v1alpha1/me/events/{event_id}.
+    """
 
     event = fields.Nested(EventSchema)
-    student = fields.Nested(EventStudentSchema(event=None))
-
-
-class MyTeamSchema(Schema):
-    """One item returned by GET /v1alpha1/me/teams."""
-
-    event = fields.Nested(EventSchema)
-    team = fields.Nested(EventTeamSchema(event=None))
-    members = fields.List(fields.Nested(EventStudentSchema(event=None)))
+    registration = fields.Nested(EventStudentSchema(event=None))
+    team = fields.Nested(TeamRefSchema, allow_none=True)

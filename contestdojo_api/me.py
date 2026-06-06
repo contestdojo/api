@@ -6,7 +6,7 @@ from starlette.routing import Route
 
 from .firebase import db
 from .oauth import require_scope
-from .schemas import EventSchema, EventStudentSchema, EventTeamSchema
+from .schemas import EventSchema, EventStudentSchema, TeamRefSchema
 
 
 async def _my_student_docs(uid: str):
@@ -15,64 +15,67 @@ async def _my_student_docs(uid: str):
     return await db.client.collection_group("students").where("user", "==", user_ref).get()
 
 
-@require_scope("events")
-async def list_my_events(request: Request):
-    student_docs = await _my_student_docs(request.user.uid)
+async def _my_student_in_event(uid: str, event_id: str):
+    """The authenticated user's registration in one event, or None.
 
-    async def build(student):
-        event_ref = student.reference.parent.parent
-        if event_ref is None:
-            return None
-        event = await event_ref.get()
-        if not event.exists:
-            return None
-        return {
-            "event": EventSchema().dump_firestore(event),
-            "student": EventStudentSchema(event=event).dump_firestore(student),
-        }
-
-    results = await asyncio.gather(*(build(s) for s in student_docs))
-    return JSONResponse([r for r in results if r is not None])
+    The student doc id is not the user's uid, so it is located by the `user`
+    reference field within the event's students subcollection.
+    """
+    user_ref = db.user(uid)
+    docs = await db.eventStudents(event_id).where("user", "==", user_ref).limit(1).get()
+    return docs[0] if docs else None
 
 
-@require_scope("teams")
-async def list_my_teams(request: Request):
-    student_docs = await _my_student_docs(request.user.uid)
+async def _team_ref(event_ref, team_ref):
+    """A minimal reference to the user's team: id + name only.
 
-    # Deduplicate by (event, team) since a user has one student record per event.
-    seen: set[str] = set()
-    tasks = []
-    for student in student_docs:
-        team_ref = student.to_dict().get("team")
-        event_ref = student.reference.parent.parent
-        if team_ref is None or event_ref is None:
-            continue
-        key = f"{event_ref.id}/{team_ref.id}"
-        if key in seen:
-            continue
-        seen.add(key)
-        tasks.append(_build_team(event_ref, team_ref))
-
-    results = await asyncio.gather(*tasks)
-    return JSONResponse([r for r in results if r is not None])
-
-
-async def _build_team(event_ref, team_ref):
-    event, team = await asyncio.gather(event_ref.get(), team_ref.get())
-    if not event.exists or not team.exists:
+    The team's other members are intentionally not exposed -- the access token
+    only carries this user's consent, so other students' records stay private.
+    """
+    if team_ref is None:
         return None
+    team = await team_ref.get()
+    if not team.exists:
+        return None
+    return TeamRefSchema().dump_firestore(team)
 
-    member_docs = await db.eventStudents(event.id).where("team", "==", team_ref).get()
-    members = [EventStudentSchema(event=event).dump_firestore(m) for m in member_docs]
 
+async def _participation(student):
+    """Build the {event, registration, team} envelope for one student doc."""
+    event_ref = student.reference.parent.parent
+    if event_ref is None:
+        return None
+    event = await event_ref.get()
+    if not event.exists:
+        return None
+    team = await _team_ref(event_ref, student.to_dict().get("team"))
     return {
         "event": EventSchema().dump_firestore(event),
-        "team": EventTeamSchema(event=event).dump_firestore(team),
-        "members": members,
+        "registration": EventStudentSchema(event=event).dump_firestore(student),
+        "team": team,
     }
+
+
+@require_scope("read:events")
+async def list_my_events(request: Request):
+    student_docs = await _my_student_docs(request.user.uid)
+    results = await asyncio.gather(*(_participation(s) for s in student_docs))
+    return JSONResponse([r for r in results if r is not None])
+
+
+@require_scope("read:events")
+async def get_my_event(request: Request):
+    event_id = request.path_params["event_id"]
+    student = await _my_student_in_event(request.user.uid, event_id)
+    if student is None:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    result = await _participation(student)
+    if result is None:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return JSONResponse(result)
 
 
 routes = [
     Route("/events", list_my_events),
-    Route("/teams", list_my_teams),
+    Route("/events/{event_id}", get_my_event),
 ]
