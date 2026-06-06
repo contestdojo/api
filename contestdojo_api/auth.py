@@ -67,6 +67,17 @@ class FirebaseAuthBackend(AuthenticationBackend):
         return AuthCredentials(), FirebaseUser(user, user_data)
 
 
+def on_auth_error(conn, exc: AuthenticationError) -> JSONResponse:
+    # Starlette's AuthenticationMiddleware defaults to a plain 400 for any
+    # AuthenticationError. A rejected bearer credential should be 401, with a
+    # WWW-Authenticate challenge per RFC 7235.
+    return JSONResponse(
+        {"error": "Unauthorized"},
+        status_code=401,
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
 def require_auth(*, type: str | None = None):
     def decorator(func: Callable[[Request], Awaitable[Any]]):
         @functools.wraps(func)
@@ -86,4 +97,8 @@ def require_auth(*, type: str | None = None):
     return decorator
 
 
-middleware = Middleware(AuthenticationMiddleware, backend=FirebaseAuthBackend())
+middleware = Middleware(
+    AuthenticationMiddleware,
+    backend=FirebaseAuthBackend(),
+    on_error=on_auth_error,
+)
